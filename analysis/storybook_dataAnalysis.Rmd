@@ -1,0 +1,235 @@
+---
+title: "Language and narrative elements in storybooks intended to promote leadership in girls"
+subtitle: "First-Year Project (FYP) Report"
+author: "Marianna Zhang (marianna.zhang@stanford.edu)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: no
+---
+
+```{r "knitr config", cache = FALSE}
+require("knitr")
+```
+
+
+```{r setup}
+#### Load relevant libraries and functions
+library(tidyverse)
+library(broom)
+library(paramtest) # power analysis
+```
+
+## Introduction
+
+
+This project's [repository](https://github.com/mariannazhang/storybook) can be found online. 
+
+
+## Methods
+
+
+### Power Analysis
+
+### Planned Sample
+
+### Materials
+The book materials presented to children can be found on the github repo under materials. 
+
+
+### Procedure	
+
+
+
+### Analysis Plan
+
+<!-- data cleaning rules, data exclusion rules, covariates, etc. Key analysis of interest. Can also pre-specify additional analyses you plan to do.-->
+
+
+#### Exclusion criteria
+Child participants will be excluded for experimenter error, insufficient English language skills, parental interference, or failing to complete the task. 
+
+#### Analysis of interest
+
+
+
+
+### Methods Addendum (Post Data Collection)
+
+```{r import-data}
+#### Import data for analysis
+df.data.children <- read_csv("../data/storybook_data_pilot_children.csv")
+```
+
+```{r kids-clean}
+# Keep columns we care about
+df.data.children <- df.data.children %>% 
+  select(-file, -bing_id, -stim)
+```
+
+
+```{r exclusion}
+#### Data exclusion / filtering
+# Record exclusions: experimentor error, age
+df.excl.children <- df.data.children %>%
+  summarize(atypical = sum(atypical == "yes"),
+            insuff_lang = sum(insuff_lang == "yes"),
+            exp_error = sum(exp_error == "yes"),
+            interference = sum(interference == "yes"))
+  
+# Exclude subjects and remove exclusion columns
+df.data.children <- df.data.children %>%
+  filter(atypical == "no",
+         insuff_lang == "no",
+         exp_error == "no",
+         interference == "no") %>%
+  select(-atypical, -insuff_lang, -exp_error, -interference)
+  
+```
+
+#### Actual Sample
+
+```{r sample-size}
+n.children <- nrow(df.data.children)
+```
+
+
+
+
+```{r combine-data}
+df.data <- df.data.children
+```
+
+
+```{r dem}
+#### Demographics
+# Add age categorical variable
+df.data <- df.data %>% 
+  mutate(age_cat = case_when(
+    age >= 5 & age < 6 ~ "5",
+    age >= 6 & age < 7 ~ "6",
+    age >= 18 ~ "adult")) %>% 
+  mutate(age_group = case_when(
+    age < 7 ~ "child",
+    age >= 18 ~ "adult"))
+df.data$age_group <- df.data$age_group %>% 
+  factor(levels=c('child', 'adult'))
+
+# Age
+df.dem_age <- df.data %>%
+  count(age_cat)
+
+# Gender
+df.dem_gender <- df.data %>%
+  count(gender)
+
+# Race
+df.dem_race <- df.data %>%
+  count(race)
+```
+
+
+
+
+
+
+
+
+## Results
+
+
+### Data preparation
+
+Data preparation as specified in the analysis plan.
+
+
+```{r recoding-tidying}
+# Recode dependent measures
+df.data$fc_expl_indiv <- df.data$fc_expl_indiv %>% 
+  recode("No" = 0, 
+         "Sort of want to be" = 1/3, 
+         "Want to be" = 2/3,
+         "Really want to be" = 1)
+
+
+
+
+
+# Gather to tidy long form
+df.tidy <- df.data %>% 
+  select(-starts_with("calibrate"), -starts_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy")
+
+# Calculate boy - girl difference
+df.subj <- df.tidy %>% 
+  group_by(subject, age, age_cat, age_group, gender, condition, book_order, dv_order) %>% 
+  summarize(girlBoy_diff = girlBoy_boy - girlBoy_girl,
+            girlGirl_diff = girlGirl_boy - girlGirl_girl,
+            excep_diff = excep_boy - excep_girl) %>% 
+  separate(stim_question, c("stim", "question"), sep = "_")
+```
+
+### Descriptive analysis
+```{r}
+# Overall self and diff measures by stim by gender
+df.means <- df.subj %>%
+  group_by(original, stim, gender) %>% 
+  summarize(self_avg = mean(self, na.rm = TRUE),
+            self_sd = sd(self, na.rm = TRUE),
+            diff_avg = mean(diff, na.rm = TRUE),
+            diff_sd = sd(diff, na.rm = TRUE))
+df.means
+```
+
+```{r}
+# Set visualization theme
+theme_set(
+  ggthemes::theme_few() +
+  theme(text = element_text(size = 16)) # large text size for presentation figures
+)
+```
+
+```{r vis-all}
+# response by stim and question, facet by gender
+ggplot(df.subj, aes(x = stim, y = response, fill = question, color = question)) +
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.8),
+             alpha = 0.3) + 
+  stat_summary(fun.data = "mean_cl_boot",
+               position = position_dodge(width = 0.8),
+               geom = "linerange",
+               size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge(width = 0.8),
+               geom = "point",
+               shape = 21,
+               color = "black",
+               size = 4) +
+  scale_fill_brewer(palette = "Set1") +
+  scale_y_continuous(limits = c(0, 1))
+ggsave("storybook_stimQuestionGender.png", width = 10)
+
+```
+
+### Target analysis
+
+The analyses as specified in the analysis plan. 
+
+```{r}
+
+```
+
+### Exploratory analysis
+
+
+
+## Discussion
+
+
+
