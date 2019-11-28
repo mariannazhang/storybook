@@ -1,7 +1,7 @@
 ---
 title: "Language and narrative elements in storybooks intended to promote leadership in girls"
-subtitle: "First-Year Project (FYP) Report"
-author: "Marianna Zhang (marianna.zhang@stanford.edu)"
+subtitle: ""
+author: "Marianna Y. Zhang (marianna.zhang@stanford.edu), Aarthi Popat (apopat@stanford.edu), Melissa Santos (melissasantos@stanford.edu), Alanna Sun (alannasun@stanford.edu), Lin Bian (lb592@cornell.edu), Pooja Mottl (pooja@poojamottl.com), Ellen M. Markman (markman@stanford.edu)"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
   pdf_document:
@@ -22,41 +22,133 @@ require("knitr")
 ```{r setup}
 #### Load relevant libraries and functions
 library(tidyverse)
-library(broom)
-library(paramtest) # power analysis
+library(ggthemes)
+library(ggplot2)
+```
+
+```{r}
+# Set visualization theme
+theme_set(
+  ggthemes::theme_few() +
+  theme(text = element_text(size = 16)) # large text size for presentation figures
+)
 ```
 
 ## Introduction
 
+Women have been historically underrepresented in a variety of occupations, fields, and roles in society. Recently, there has been a burgeoning market of storybooks intended to motivate and inspire preschool girls to pursue roles in which they are underrepresented. 
 
-This project's [repository](https://github.com/mariannazhang/storybook) can be found online. 
+We are interested in evaluating whether certain types of language and narrative elements used in these storybooks successfully achieve the goal of motivating children to pursue these fields, and dispelling gender stereotypes about these fields. Directional comparisons between boys and girls ("girls can do _ just as well as boys") may establish boys as the unquestioned standard that girls must measure up to, such that boys’ ability to succeed is taken as a matter of fact, and girls’ ability to succeed is a question6. Language demeaning femininity and associating masculinity with the field ("while other girls played with dolls… she [future scientist] played with a lizard") may discourage young girls who identify with femininity from the field. Exceptional female protagonists ("she was born to… she set a world record… she was the first to…") – may be too unreachable and unrelatable to be role models, and may suggest that exceptional accomplishments are necessary to succeed in the field.
+
+
+This project's [repository](https://github.com/mariannazhang/storybook) and [preregistration](https://osf.io/95axr/) can be found online. 
 
 
 ## Methods
 
 
 ### Power Analysis
+```{r predictions}
+# set predicted values based on prior literature for girls' self-motivation
+df.predicted <- tibble(
+  condition = c("original", "edited", "baseline"), 
+  response = c(0.4, # original
+           0.7, # edited
+           0.7), # baseline
+  sd = c(0.15, 
+         0.15, 
+         0.15)
+)
+
+# plot predictions
+ggplot(df.predicted, aes(x = condition, y = response)) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge(width = 0.8),
+               geom = "point",
+               shape = 21,
+               color = "black",
+               size = 4) +
+  scale_fill_brewer(palette = "Set1") +
+  scale_y_continuous(limits = c(0, 1))
+# ggsave("storybook_predicted.png", width = 5.5)
+```
+
+```{r power-analysis}
+# make reproducible
+set.seed(1)
+
+# set parameters 
+alpha = 0.05
+n_simulations = 100
+n = seq(50, 125, 12)
+
+# set up the simulation grid 
+df.pwr = crossing(sample_size = n,
+                  simulation = 1:n_simulations,
+                  alpha = alpha)
+
+df.pwr <- df.pwr %>%
+  group_by(simulation, sample_size) %>%
+  mutate(data = list(
+    tibble(
+      condition = rep(c("original", "edited", "baseline"), each = sample_size),
+      response = c(
+        rnorm(sample_size, mean = df.predicted$response[1], sd = df.predicted$sd[1]),
+        rnorm(sample_size, mean = df.predicted$response[2], sd = df.predicted$sd[2]),
+        rnorm(sample_size, mean = df.predicted$response[3], sd = df.predicted$sd[3])
+      )
+    )
+  )) %>% 
+  mutate(fit = map(data, ~ lm(response ~ condition, data = .)),
+         coef = map(fit, tidy)) %>% 
+  unnest(coef) %>% 
+  filter(term == "condition") %>% 
+  group_by(sample_size) %>% 
+  summarize(power = sum(p.value < .05) / n())
+df.pwr
+
+ggplot(df.pwr, aes(x = sample_size, y = power)) +
+  geom_line() +
+  geom_line(y = 0.8, linetype = "dashed") +
+  scale_y_continuous(limits = c(0, 1))
+
+```
+
+We chose to run n=96 5 to 6-year-olds, which is n=32 in each condition of this 3-condition design. We chose n=32 for each condition because n=32 per cell was an appropriate sample size used in prior studies (cite Lin's studies).
+
+<!-- By running our target analysis on simulated data (based on results from prior studies and our own predictions), we found that n=96 should yield `r df.pwr$power[2] * 100`% power. -->
+
+
 
 ### Planned Sample
+The planned sample size is n=96 5- and 6-year-olds recruited from a university preschool and museums. 
+
+We may additionally run adults recruited on Amazon Mechanical Turk. MTurk participants will be required to be located within the United States, and will be required to have a HIT acceptance rate of 80% or above. MTurk participants will be paid according to $15/hour wage. 
+
+
 
 ### Materials
-The book materials presented to children can be found on the github repo under materials. 
+The book stimuli and scripts administered to children can be found on the github repo under materials. 
 
 
 ### Procedure	
+Participants will be randomly assigned to one of three between-subject conditions: original, edited, or baseline. 
 
+For the original and edited conditions, children will be read excerpted passages from three books (with the order of the 3 books counterbalanced). Children will either hear an original passage from the book, or a passage we have edited to remove the type of language or narrative element we are interested in. 
+
+Children will then be asked about their own motivation to pursue the role in the story, as well as the motivation of a new girl character and the motivation of a new boy character (order of the girl and boy questions counterbalanced, alternating across the 3 books). Children in the baseline condition will solely be asked the 3 motivation questions. 
 
 
 ### Analysis Plan
-
 <!-- data cleaning rules, data exclusion rules, covariates, etc. Key analysis of interest. Can also pre-specify additional analyses you plan to do.-->
 
 
 #### Exclusion criteria
-Child participants will be excluded for experimenter error, insufficient English language skills, parental interference, or failing to complete the task. 
+Child participants will be excluded for atypical development, experimenter error, insufficient English language skills, parental interference, familiarity with any of the storybooks, or failing to complete the task. 
 
 #### Analysis of interest
-
+<!-- Talk to Lin about specifying this -->
+An 
 
 
 
@@ -64,80 +156,236 @@ Child participants will be excluded for experimenter error, insufficient English
 
 ```{r import-data}
 #### Import data for analysis
-df.data.children <- read_csv("../data/storybook_data_pilot_children.csv")
+df.data.pilot.1 <- read_csv("../data/storybook_data_pilot_1_children.csv")
+df.data.pilot.2 <-
+  read_csv("../data/storybook_data_pilot_2_children_csv.csv")
+df.data.pilot.baseline <- read_csv("../data/storybook_data_pilot_baseline_children.csv")
+
+df.data <- read_csv("../data/storybook_data.csv")
 ```
 
-```{r kids-clean}
-# Keep columns we care about
-df.data.children <- df.data.children %>% 
-  select(-file, -bing_id, -stim)
+```{r clean-data}
+# Pilot 1: keep columns we care about
+df.data.pilot.1 <- df.data.pilot.1 %>% 
+  select(-file, -bing_id)
+
+#P2
+df.data.pilot.2 <- df.data.pilot.2 %>% 
+  select(-file, -bing_id)
+
+# Baseline: keep the columns we care about, rename and recode columns to match pilot 1 data format
+df.data.pilot.baseline <- df.data.pilot.baseline %>% 
+  select(-(StartDate:UserLanguage)) %>% 
+  rename("subject" = Q45, 
+         "age_cat" = Q43, 
+         "gender" = Q44)
+
+df.data.pilot.baseline$gender <- df.data.pilot.baseline$gender %>% 
+  recode("1" = "male",
+         "2" = "female")
+
+# Baseline: add condition as baseline, location as Cornell
+df.data.pilot.baseline$condition <- "baseline"
+df.data.pilot.baseline$location <- "Cornell"
+
+# Baseline: recode, combine, and remove old calibration columns
+# df.data.pilot.baseline <- df.data.pilot.baseline %>% 
+#   mutate_if(vars(starts_with("calibrate")), 
+#             if_else(. == "1", .+1, "0")
+
+df.data.pilot.baseline <- df.data.pilot.baseline %>% 
+  mutate(`calibrate-1-yes` = if_else(`calibrate-1-yes-1` == "1", `calibrate-1-yes-2`, "0"), 
+         `calibrate-1-no` = if_else(`calibrate-1-no-1` == "1", `calibrate-1-no-2`, "0"),
+         `calibrate-2-yes` = if_else(`calibrate-2-yes-1` == "1", `calibrate-2-yes-2`, "0"),
+         `calibrate-2-no` = if_else(`calibrate-2-no-1` == "1", `calibrate-2-no-2`, "0")) %>% 
+  rename("calibrate_1_yes" = `calibrate-1-yes`,
+         "calibrate_1_no" = `calibrate-1-no`,
+         "calibrate_2_yes" = `calibrate-2-yes`,
+         "calibrate_2_no" = `calibrate-2-no`)
+
+df.data.pilot.baseline <- df.data.pilot.baseline %>%
+  select(-(`calibrate-1-yes-1`:`calibrate-2-no-2`))
+
+# Baseline: combine and remove old DV columns
+df.data.pilot.baseline <- df.data.pilot.baseline %>% 
+  mutate(girlBoy_self = if_else(girlBoy_self_1 == "1", girlBoy_self_2, girlBoy_self_1), 
+         girlBoy_girl = if_else(girlBoy_girl_1 == "1", girlBoy_girl_2, girlBoy_girl_1),
+         girlBoy_boy = if_else(girlBoy_boy_1 == "1", girlBoy_boy_2, girlBoy_boy_1),
+         girlGirl_self = if_else(girlGirl_self_1 == "1", girlGirl_self_2, girlGirl_self_1),
+         girlGirl_girl = if_else(girlGirl_girl_1 == "1", girlGirl_girl_2, girlGirl_girl_1),
+         girlGirl_boy = if_else(girlGirl_boy_1 == "1", girlGirl_boy_2, girlGirl_boy_1),
+         excep_self = if_else(excep_self_1 == "1", excep_self_2, excep_self_1),
+         excep_girl = if_else(excep_girl_1 == "1", excep_girl_2, excep_girl_1),
+         excep_boy = if_else(excep_boy_1 == "1", excep_boy_2, excep_boy_1))
+
+df.data.pilot.baseline <- df.data.pilot.baseline %>%
+  select(-(girlBoy_self_1:excep_boy_2))
+
+# Baseline: remove rows with NAs and cut off first two descriptive rows from Qualtrics
+df.data.pilot.baseline <- drop_na(df.data.pilot.baseline)
+df.data.pilot.baseline <- slice(df.data.pilot.baseline, 3:n())
+
 ```
 
-
-```{r exclusion}
+```{r exclusion} 
 #### Data exclusion / filtering
-# Record exclusions: experimentor error, age
-df.excl.children <- df.data.children %>%
+# Pilot 1: record exclusions: experimentor error, age
+df.excl.pilot.1 <- df.data.pilot.1 %>%
   summarize(atypical = sum(atypical == "yes"),
             insuff_lang = sum(insuff_lang == "yes"),
             exp_error = sum(exp_error == "yes"),
-            interference = sum(interference == "yes"))
+            interference = sum(interference == "yes"),
+            familiarity = sum(familiarity == "yes"))
+
+#P2
+df.excl.pilot.2 <- df.data.pilot.2 %>%
+  summarize(atypical = sum(atypical == "yes"),
+            insuff_lang = sum(insuff_lang == "yes"),
+            exp_error = sum(exp_error == "yes"),
+            interference = sum(interference == "yes"),
+            familiarity = sum(familiarity == "yes"))
   
-# Exclude subjects and remove exclusion columns
-df.data.children <- df.data.children %>%
+# Pilot 1: exclude subjects and remove exclusion columns
+df.data.pilot.1 <- df.data.pilot.1 %>%
   filter(atypical == "no",
          insuff_lang == "no",
          exp_error == "no",
-         interference == "no") %>%
-  select(-atypical, -insuff_lang, -exp_error, -interference)
+         interference == "no",
+         familiarity == "no") %>%
+  select(-atypical, -insuff_lang, -exp_error, -interference, -familiarity)
+
+#P2
+df.data.pilot.2 <- df.data.pilot.2 %>%
+  filter(atypical == "no",
+         insuff_lang == "no",
+         exp_error == "no",
+         interference == "no",
+         familiarity == "no") %>%
+  select(-atypical, -insuff_lang, -exp_error, -interference, -familiarity)
+
+#P2: More check columns than data pilot 1, so for plot purposes, exclude the check_pass_x columns and keep the context check. Rename the context check to just "check". Change based on performance on passage checks later.
+
+df.data.pilot.2 <- df.data.pilot.2 %>% 
+  select(-ends_with("check_pass_1"), -ends_with("check_pass_2"), -ends_with("check_pass_3"), -ends_with("check_pass_4")) %>% 
+  rename("girlGirl_check" = girlGirl_check_context,
+         "girlBoy_check" = girlBoy_check_context,
+         "excep_check" = excep_check_context)
+  
+
   
 ```
 
 #### Actual Sample
 
 ```{r sample-size}
-n.children <- nrow(df.data.children)
+# Record number of children in actual sample after exclusions
+n.pilot.1 <- nrow(df.data.pilot.1)
+n.pilot.baseline <- nrow(df.data.pilot.baseline)
+#P2
+n.pilot.2 <- nrow(df.data.pilot.2)
 ```
 
-
-
+In pilot 1, we collected data from n = `r n.pilot.1` children. In baseline piloting, we collected data from n = `r n.pilot.baseline` children.
 
 ```{r combine-data}
-df.data <- df.data.children
+# Align column formats
+df.data.pilot.baseline$age_cat <- as.numeric(df.data.pilot.baseline$age_cat)
+df.data.pilot.1$subject <- as.character(df.data.pilot.1$subject)
+#P2
+df.data.pilot.2$subject <- as.character(df.data.pilot.2$subject)
+
+
+# Add data group tags
+df.data.pilot.1 <- df.data.pilot.1 %>% 
+  mutate(data_group = "pilot 1")
+df.data.pilot.baseline <- df.data.pilot.baseline %>% 
+  mutate(data_group = "pilot baseline")
+df.data.pilot.2 <- df.data.pilot.2 %>% 
+  mutate(data_group = "pilot 2")
+
+# Exclude 4 year olds from Pilot Baseline data
+# df.data.pilot.baseline <- df.data.pilot.baseline %>% 
+ # filter(age_cat == 5 | age_cat == 6)
+
+# Recode DVs into numbers
+df.data.pilot.1 <- df.data.pilot.1 %>% 
+  mutate_at(vars(calibrate_1_yes, calibrate_1_no, calibrate_2_yes, calibrate_2_no, girlBoy_self, girlBoy_girl, girlBoy_boy,
+                 girlGirl_self, girlGirl_girl, girlGirl_boy,
+                 excep_self, excep_girl, excep_boy), 
+            ~case_when(. == "No" ~ 0, 
+                       . == "Sort of want to be" ~ 1,
+                       . == "Want to be" ~ 2,
+                       . == "Really want to be" ~ 3,
+                       . == "Sort of want to" ~ 1,
+                       . == "Want to" ~ 2,
+                       . == "Really want to" ~ 3))
+
+#P2
+df.data.pilot.2 <- df.data.pilot.2 %>% 
+  mutate_at(vars(calibrate_1_yes, calibrate_1_no, calibrate_2_yes, calibrate_2_no, girlBoy_self, girlBoy_girl, girlBoy_boy,
+                 girlGirl_self, girlGirl_girl, girlGirl_boy,
+                 excep_self, excep_girl, excep_boy), 
+            ~case_when(. == "No" ~ 0,
+                       . == "no" ~ 0,
+                       . == "Sort of want to be" ~ 1,
+                       . == "Want to be" ~ 2,
+                       . == "Really want to be" ~ 3,
+                       . == "Sort of want to" ~ 1,
+                       . == "Want to" ~ 2,
+                       . == "Really want to" ~ 3,
+                       . == "sort of want" ~ 1,
+                       . == "want" ~ 2,
+                       . == "really want" ~ 3))
+
+df.data.pilot.baseline$calibrate_1_yes <- as.numeric(df.data.pilot.baseline$calibrate_1_yes)
+
+df.data.pilot.baseline$calibrate_1_no <- as.numeric(df.data.pilot.baseline$calibrate_1_no)
+
+df.data.pilot.baseline$calibrate_2_yes <- as.numeric(df.data.pilot.baseline$calibrate_2_yes)
+
+df.data.pilot.baseline$calibrate_2_no <- as.numeric(df.data.pilot.baseline$calibrate_2_no)
+
+df.data.pilot.baseline$girlBoy_self <- as.numeric(df.data.pilot.baseline$girlBoy_self)
+
+df.data.pilot.baseline$girlBoy_girl <- as.numeric(df.data.pilot.baseline$girlBoy_girl)
+
+df.data.pilot.baseline$girlBoy_boy <- as.numeric(df.data.pilot.baseline$girlBoy_boy)
+
+df.data.pilot.baseline$girlGirl_self <- as.numeric(df.data.pilot.baseline$girlGirl_self)
+
+df.data.pilot.baseline$girlGirl_girl <- as.numeric(df.data.pilot.baseline$girlGirl_girl)
+
+df.data.pilot.baseline$girlGirl_boy <- as.numeric(df.data.pilot.baseline$girlGirl_boy)
+
+df.data.pilot.baseline$excep_self <- as.numeric(df.data.pilot.baseline$excep_self)
+
+df.data.pilot.baseline$excep_girl <- as.numeric(df.data.pilot.baseline$excep_girl)
+
+df.data.pilot.baseline$excep_boy <- as.numeric(df.data.pilot.baseline$excep_boy)
+
+#look into df %>% mutate_at('x1', as.numeric) %>% 
+# Combine data
+#df.data <- bind_rows(df.data.pilot.1, df.data.pilot.baseline) 
+#P2
+df.data <- bind_rows(df.data.pilot.1, df.data.pilot.2, df.data.pilot.baseline) 
+#P2 and baseline, excluding P1
+#df.data <- bind_rows(df.data.pilot.2, df.data.pilot.baseline) 
+
 ```
 
 
 ```{r dem}
 #### Demographics
-# Add age categorical variable
-df.data <- df.data %>% 
-  mutate(age_cat = case_when(
-    age >= 5 & age < 6 ~ "5",
-    age >= 6 & age < 7 ~ "6",
-    age >= 18 ~ "adult")) %>% 
-  mutate(age_group = case_when(
-    age < 7 ~ "child",
-    age >= 18 ~ "adult"))
-df.data$age_group <- df.data$age_group %>% 
-  factor(levels=c('child', 'adult'))
-
 # Age
 df.dem_age <- df.data %>%
+  group_by(data_group) %>% 
   count(age_cat)
 
 # Gender
 df.dem_gender <- df.data %>%
+  group_by(data_group) %>% 
   count(gender)
-
-# Race
-df.dem_race <- df.data %>%
-  count(race)
 ```
-
-
-
-
-
 
 
 
@@ -150,41 +398,80 @@ Data preparation as specified in the analysis plan.
 
 
 ```{r recoding-tidying}
-# Recode dependent measures
-df.data$fc_expl_indiv <- df.data$fc_expl_indiv %>% 
-  recode("No" = 0, 
-         "Sort of want to be" = 1/3, 
-         "Want to be" = 2/3,
-         "Really want to be" = 1)
-
-
-
-
+#df.data$data_group <- factor(df.data$data_group, levels = c("pilot baseline", "pilot 1"))
+#P2
+df.data$data_group <- factor(df.data$data_group, levels = c("pilot baseline", "pilot 1", "pilot 2"))
+#P2 and baseline, excluding P1
+#df.data$data_group <- factor(df.data$data_group, levels = c("pilot baseline", "pilot 2"))
 
 # Gather to tidy long form
 df.tidy <- df.data %>% 
-  select(-starts_with("calibrate"), -starts_with("check")) %>% 
-  gather(stim_question, response, "girlBoy_self":"excep_boy")
+  # Disregard calibration and check questions
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  # Tidy DVs
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  # Separate out into two columns
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  # Specify order
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
 
-# Calculate boy - girl difference
-df.subj <- df.tidy %>% 
-  group_by(subject, age, age_cat, age_group, gender, condition, book_order, dv_order) %>% 
-  summarize(girlBoy_diff = girlBoy_boy - girlBoy_girl,
-            girlGirl_diff = girlGirl_boy - girlGirl_girl,
-            excep_diff = excep_boy - excep_girl) %>% 
-  separate(stim_question, c("stim", "question"), sep = "_")
+
+#P1 and baseline, excluding P2
+df.tidy.p1.baseline <- df.data %>% 
+  filter(data_group == "pilot 1" | data_group == "pilot baseline") %>% 
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+#P2 and baseline, excluding P1
+df.tidy.p2.baseline <- df.data %>% 
+  filter(data_group == "pilot 2" | data_group == "pilot baseline") %>% 
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+#P2 and P1, excluding baseline
+df.tidy.p1.p2 <- df.data %>% 
+  filter(data_group == "pilot 1" | data_group == "pilot 2") %>% 
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+  
 ```
 
 ### Descriptive analysis
-```{r}
+```{r descriptive-analysis}
 # Overall self and diff measures by stim by gender
-df.means <- df.subj %>%
-  group_by(original, stim, gender) %>% 
-  summarize(self_avg = mean(self, na.rm = TRUE),
-            self_sd = sd(self, na.rm = TRUE),
-            diff_avg = mean(diff, na.rm = TRUE),
-            diff_sd = sd(diff, na.rm = TRUE))
+
+df.means <- df.data %>%
+  group_by(gender, data_group) %>% 
+  summarize(girlBoy_self_mean = mean(girlBoy_self, na.rm = TRUE),
+            girlBoy_self_sd = sd(girlBoy_self, na.rm = TRUE),
+            girlBoy_girl_mean = mean(girlBoy_girl, na.rm = TRUE),
+            girlBoy_girl_sd = sd(girlBoy_girl, na.rm = TRUE),
+            girlBoy_boy_mean = mean(girlBoy_boy, na.rm = TRUE),
+            girlBoy_boy_sd = sd(girlBoy_boy, na.rm = TRUE),
+            girlGirl_self_mean = mean(girlGirl_self, na.rm = TRUE),
+            girlGirl_self_sd = sd(girlGirl_self, na.rm = TRUE),
+            girlGirl_girl_mean = mean(girlGirl_girl, na.rm = TRUE),
+            girlGirl_girl_sd = sd(girlGirl_girl, na.rm = TRUE),
+            girlGirl_boy_mean = mean(girlGirl_boy, na.rm = TRUE),
+            girlGirl_boy_sd = sd(girlGirl_boy, na.rm = TRUE),
+            excep_self_mean = mean(excep_self, na.rm = TRUE),
+            excep_self_sd = sd(excep_self, na.rm = TRUE),
+            excep_girl_mean = mean(excep_girl, na.rm = TRUE),
+            excep_girl_sd = sd(excep_girl, na.rm = TRUE),
+            excep_boy_mean = mean(excep_boy, na.rm = TRUE),
+            excep_boy_sd = sd(excep_boy, na.rm = TRUE))
 df.means
+
 ```
 
 ```{r}
@@ -196,33 +483,615 @@ theme_set(
 ```
 
 ```{r vis-all}
-# response by stim and question, facet by gender
-ggplot(df.subj, aes(x = stim, y = response, fill = question, color = question)) +
+# response by question and stim, facet by gender
+ggplot(df.tidy, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +
   facet_wrap(vars(gender)) +
-  geom_point(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.8),
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
              alpha = 0.3) + 
-  stat_summary(fun.data = "mean_cl_boot",
-               position = position_dodge(width = 0.8),
-               geom = "linerange",
-               size = 1) +
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
   stat_summary(fun.y = "mean",
-               position = position_dodge(width = 0.8),
+               position = position_dodge2(width = 0.8, padding = 0),
                geom = "point",
-               shape = 21,
-               color = "black",
                size = 4) +
-  scale_fill_brewer(palette = "Set1") +
-  scale_y_continuous(limits = c(0, 1))
-ggsave("storybook_stimQuestionGender.png", width = 10)
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_comparison.png", width = 10)
+
+# response by question, facet by gender and stim
+ggplot(df.tidy, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_comparison_grid.png", width = 10)
 
 ```
+
+```{r pilot1-baseline}
+# response by question and stim, facet by gender
+ggplot(df.tidy.p1.baseline, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+ # labs(title = "Pilot 1 vs. Pilot Baseline") +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "dissGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+ggsave("storybook_pilot1_baseline_comparison.png", width = 10)
+
+
+
+# response by question, facet by gender and stim
+ggplot(df.tidy.p1.baseline, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+ # labs(title = "Pilot 1 vs. Baseline Data") +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "dissGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot1_baseline_comparison_grid.png", width = 10)
+
+```
+
+
+```{r pilot2-baseline}
+# response by question and stim, facet by gender
+ggplot(df.tidy.p2.baseline, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+ # labs(title = "Pilot 2 vs. Baseline Data") +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "dissGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+ggsave("storybook_pilot2_baseline_comparison.png", width = 10)
+
+# response by question, facet by gender and stim
+ggplot(df.tidy.p2.baseline, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+ # labs(title = "Pilot 2 vs. Baseline Data") +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "dissGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot2_baseline_comparison_grid.png", width = 10)
+
+```
+
+
+```{r pilot1-pilot2}
+#P2 and P1
+# response by question and stim, facet by gender
+ggplot(df.tidy.p1.p2, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +   
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot1_pilot2_comparison.png", width = 10)
+
+# response by question, facet by gender and stim
+ggplot(df.tidy.p1.p2, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot1_pilot2_comparison_grid.png", width = 10)
+
+```
+
+
+```{r misc}
+#Additional analysis/potentially helpful information
+#Total counts of 0/1/2/3 responses
+count(df.tidy, response)
+
+#Tidy the pilot 1, 2 and baseline data individually, so can see counts of 0/1/2/3 responses
+df.tidy.p1 <- df.data %>% 
+  filter(data_group == "pilot 1") %>% 
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+mean.age.pilot.1 <- mean(df.tidy.p1$age)
+
+df.tidy.p2 <- df.data %>% 
+  filter(data_group == "pilot 2") %>% 
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+mean.age.pilot.2 <- mean(df.tidy.p2$age)
+
+df.tidy.baseline <- df.data %>% 
+  filter(data_group == "pilot baseline") %>% 
+  select(-starts_with("calibrate"), -ends_with("check")) %>% 
+  gather(stim_question, response, "girlBoy_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(stim = fct_relevel(stim, "girlBoy", "girlGirl", "excep")) %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+mean.age.baseline <- mean(df.tidy.baseline$age_cat)
+
+#Count number of 0/1/2/3 in each pilot
+count(df.tidy.p1, response)
+count(df.tidy.p2, response)
+
+#Create a new data frame where the participants are split by location
+df.pilot.2.bing <- filter(df.tidy.p2, location == "Bing") 
+df.pilot.2.jmz <- filter(df.tidy.p2, location == "JMZ")
+
+#Create a new data frame combining P1 and baseline
+df.pilot.1.baseline <- bind_rows(df.tidy.baseline, df.tidy.p1)
+
+#Create a new data frame combining P2 and baseline
+df.pilot.2.baseline <- bind_rows(df.tidy.baseline, df.tidy.p2)
+
+#Create 2 new data frames combining P2 and baseline, separated by location
+df.pilot.2.baseline.bing <- bind_rows(df.pilot.2.bing, df.tidy.baseline) 
+df.pilot.2.baseline.jmz <- bind_rows(df.pilot.2.jmz, df.tidy.baseline)
+
+#Create a new data frame where the book_order column is separated
+df.separated <- separate(df.data.pilot.2, book_order, "_", remove = FALSE)
+
+df.separated.girlBoy <- filter(df.separated, `_` == "girlBoy")
+df.separated.girlGirl <- filter(df.separated, `_` == "girlGirl")
+df.separated.excep <- filter(df.separated, `_` == "excep")
+
+df.separated.girlBoy <- df.separated.girlBoy %>% 
+  select(-(calibrate_1_yes:calibrate_2_no), -(girlGirl_check:excep_boy)) %>% 
+  gather(stim_question, response, "girlBoy_self":"girlBoy_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+df.separated.girlGirl <- df.separated.girlGirl %>% 
+  select(-(calibrate_1_yes:girlBoy_boy), -(excep_check:excep_boy)) %>% 
+  gather(stim_question, response, "girlGirl_self":"girlGirl_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+df.separated.excep <- df.separated.excep %>% 
+  select(-(calibrate_1_yes:girlGirl_boy)) %>% 
+  gather(stim_question, response, "excep_self":"excep_boy") %>% 
+  separate(stim_question, c("stim", "question"), sep = "_") %>% 
+  mutate(question = fct_relevel(question, "self", "girl", "boy"))
+
+#Combine into one big dataset of only first books
+first.book.pilot.2 <- bind_rows(df.separated.girlBoy, df.separated.girlGirl, df.separated.excep)
+
+#Combine into first book and baseline dataset
+first.book.pilot.2.baseline <- bind_rows(df.tidy.baseline, df.separated.girlBoy, df.separated.girlGirl, df.separated.excep)
+
+df.pilot.ages <- data.frame("Pilot" = c("Pilot Baseline", "Pilot 1", "Pilot 2"), "Age" = c(mean.age.baseline, mean.age.pilot.1, mean.age.pilot.2))
+
+#Create a continuous age plot with responses to things. Code pilots differently: 3 different colors for pilot. Then, separate questions per book - just do self on one, girls on the other, boys on the last.
+
+#x-axis: age
+#y-axis: motivation - response for only "self" then "boys" then "girls" for all 3 books
+#don't separate by gender this time
+
+#Separate into different data frames with only "self/girl/boy" as questions
+df.self <- df.tidy %>%
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.self.girlBoy <- df.self %>%
+  filter(stim == "girlBoy") %>% 
+  filter(question == "self") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.self.girlGirl <- df.self %>%
+  filter(stim == "girlGirl") %>% 
+  filter(question == "self") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.self.excep <- df.self %>%
+  filter(stim == "excep") %>% 
+  filter(question == "self") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.girl.girlBoy <- df.self %>%
+  filter(stim == "girlBoy") %>% 
+  filter(question == "girl") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.girl.girlGirl <- df.self %>%
+  filter(stim == "girlGirl") %>% 
+  filter(question == "girl") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.girl.excep <- df.self %>%
+  filter(stim == "excep") %>% 
+  filter(question == "girl") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.boy.girlBoy <- df.self %>%
+  filter(stim == "girlBoy") %>% 
+  filter(question == "boy") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.boy.girlGirl <- df.self %>%
+  filter(stim == "girlGirl") %>% 
+  filter(question == "boy") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+df.boy.excep <- df.self %>%
+  filter(stim == "excep") %>% 
+  filter(question == "boy") %>% 
+  select(age, gender, age_cat, stim, question, data_group, response)
+
+#our main goal is to graph age on a continuum -- so age should be the x-axis. what other info do we want? we want responses to be our Y axis. no no it should also be separated by pilot, right? ok let's separate by pilot, too. so now we have all the ages for pilot 1. if we want age on the x axis, then we should ... we still want to facet wrap by gender, then.
+```
+
+```{r}
+ggplot(df.self.girlBoy, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+  geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("self_girlBoy_age.png", width = 10)
+```
+```{r}
+ggplot(df.self.girlGirl, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+   geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("self_girlGirl_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.self.excep, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+  geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("self_excep_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.boy.girlBoy, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+  geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("boy_girlBoy_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.boy.girlGirl, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+ geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("boy_girlGirl_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.boy.excep, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+   geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("boy_excep_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.girl.girlBoy, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+   geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("girl_girlBoy_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.girl.girlGirl, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+   geom_point(alpha = 0.3)  + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("girl_girlGirl_age.png", width = 10)
+```
+
+```{r}
+ggplot(df.girl.excep, aes(x = age, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender, question)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  scale_x_continuous(limits = c(4, 7)) 
+
+ggsave("girl_excep_age.png", width = 10)
+```
+
+```{r}
+#Graph the first book dataset against baseline data
+ggplot(first.book.pilot.2.baseline, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_first_book_pilot_2.png", width = 10)
+
+# response by question, facet by gender and stim
+ggplot(first.book.pilot.2.baseline, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_first_book_pilot_2_grid.png", width = 10)
+
+
+```
+
+```{r}
+#Graph Bing vs. baseline
+
+ggplot(df.pilot.2.baseline.bing, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot_2_bing.png", width = 10)
+
+# response by question, facet by gender and stim
+ggplot(df.pilot.2.baseline.bing, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot_2_bing_grid.png", width = 10)
+
+
+```
+
+```{r}
+#Graph JMZ vs. baseline 
+ggplot(df.pilot.2.baseline.jmz, aes(x = stim, y = response, shape = question, fill = data_group, color = data_group)) +
+  facet_wrap(vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot_2_jmz.png", width = 10)
+
+# response by question, facet by gender and stim
+ggplot(df.pilot.2.baseline.jmz, aes(x = question, y = response, fill = data_group, color = data_group)) +
+  facet_grid(rows = vars(stim), cols = vars(gender)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("girlGirl" = "girlGirl\n Procter\n scientist",
+                              "girlBoy" = "girlBoy\n Austen\n writer",
+                              "excep" = "excep\n Earhart\n pilot"))
+
+ggsave("storybook_pilot_2_jmz_grid.png", width = 10)
+```
+
+
+```{r}
+#Create data frame with only calibration question, pilot 2, and location
+
+df.data.calibration <- filter(df.data, data_group == "pilot 2")
+df.data.calibration <- filter(df.data.calibration, location == "Bing" | location == "JMZ")
+df.data.calibration <- df.data.calibration %>%
+  select(-(girlBoy_check:excep_boy))
+
+#Create dataframe with only calibrate questions and location
+df.data.calibration.location <- df.data.calibration %>% 
+  select(location, calibrate_1_yes:calibrate_2_no) %>% 
+  #rename("calibrate1_yes" = calibrate_1_yes) %>% 
+  #rename("calibrate1_no" = calibrate_1_no) %>% 
+  #rename("calibrate2_yes" = calibrate_2_yes) %>% 
+  #rename("calibrate2_no" = calibrate_2_no) %>% 
+  #gather(calibration_question, response, "calibrate1_yes":"calibrate2_no")
+  rename("Ice Cream for Dessert" = calibrate_1_yes) %>% 
+  rename("Eggs for Dessert" = calibrate_1_no) %>% 
+  rename("Play on Swings" = calibrate_2_yes) %>% 
+  rename("Sit & Do Nothing" = calibrate_2_no) %>%
+  gather(calibration_question, response, "Ice Cream for Dessert":"Sit & Do Nothing")
+
+#df.data$data_group <- factor(df.data$data_group, levels = c("pilot baseline", "pilot 1", "pilot 2"))
+
+```
+
+```{r site-calibration}
+# calibration questions across Bing vs JMZ testing sites
+ggplot(df.data.calibration.location, aes(x = calibration_question, y = response, #shape = question,
+                                         fill = location, color = location)) +
+  #facet_wrap(vars(location)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.4, jitter.height = 0.05,dodge.width = 0.7), 
+             alpha = 0.3) + 
+  # stat_summary(fun.data = "mean_cl_boot",
+  #              position = position_dodge(width = 0.8),
+  #              geom = "linerange",
+  #              size = 1) +
+  stat_summary(fun.y = "mean",
+               position = position_dodge2(width = 0.8, padding = 0),
+               geom = "point",
+               size = 4) +
+  scale_y_continuous(limits = c(0, 3)) + 
+  scale_x_discrete(labels = c("calibrate_1_yes" = "Ice Cream for Dessert",
+                              "calibrate_1_no" = "Eggs for Dessert",
+                              "calibrate_2_yes" = "Play on Swings",
+                              "calibrate_2_no" = "Sit on Chair"))
+
+ggsave("bing_jmz_calibration.png", width = 10)
+```
+
+
 
 ### Target analysis
 
 The analyses as specified in the analysis plan. 
 
 ```{r}
+# self motivation (add condition as * condition)
+lmer(response ~ gender + (1|stim), data = df.tidy %>% filter(question == "self")) %>% 
+  summary()
 
+# boy vs girl motivation (add condition as * condition)
+lmer(response ~ gender * question + (1|stim), data = df.tidy %>% filter(question == "boy" | question == "girl")) %>% 
+  summary()
 ```
 
 ### Exploratory analysis
