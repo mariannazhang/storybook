@@ -1,0 +1,62 @@
+﻿StartDate,EndDate,Status,IPAddress,Progress,Duration (in seconds),Finished,RecordedDate,ResponseId,RecipientLastName,RecipientFirstName,RecipientEmail,ExternalReference,LocationLatitude,LocationLongitude,DistributionChannel,UserLanguage,Q45,Q44,Q43,calibrate-1-yes-1,calibrate-1-yes-2,calibrate-1-no-1,calibrate-1-no-2,calibrate-2-yes-1,calibrate-2-yes-2,calibrate-2-no-1,calibrate-2-no-2,girlBoy_self_1,girlBoy_self_2,girlBoy_girl_1,girlBoy_girl_2,girlBoy_boy_1,girlBoy_boy_2,girlGirl_self_1,girlGirl_self_2,girlGirl_girl_1,girlGirl_girl_2,girlGirl_boy_1,girlGirl_boy_2,excep_self_1,excep_self_2,excep_girl_1,excep_girl_2,excep_boy_1,excep_boy_2
+Start Date,End Date,Response Type,IP Address,Progress,Duration (in seconds),Finished,Recorded Date,Response ID,Recipient Last Name,Recipient First Name,Recipient Email,External Data Reference,Location Latitude,Location Longitude,Distribution Channel,User Language,Please enter subject ID,Please indicate the child's gender,Please enter the child's age,"Okay, I‚Äôve got some questions for you.
+
+
+
+Let's say you just finished dinner. Would you want to have ice cream for dessert?","How much would you want to have ice cream for dessert?
+
+
+
+You can point and tell me you ‚Äúsort of want ice cream for dessert‚Äù, ‚Äúwant to have ice cream for dessert‚Äù, or ‚Äúreally want to have ice cream for dessert‚Äù.",Would you want to have eggs for dessert?,"How much would you want to have eggs for dessert?
+
+
+
+You can point and tell me you ‚Äúsort of want eggs for dessert‚Äù, ‚Äúwant to have eggs for dessert‚Äù, or ‚Äúreally want to have eggs for dessert‚Äù.",Let's say you were going to go out and play. Would you want to play on the swings?,"How much would you want to play on the swings?
+
+
+
+You can point and tell me you ‚Äúsort of want to play on the swings‚Äù, ‚Äúwant to play on the swings‚Äù, or ‚Äúreally want to play on the swings‚Äù.",Would you want to sit on a chair and do nothing?,"How much would you want to sit on a chair and do nothing?
+
+
+
+You can point and tell me you ‚Äúsort of want to sit on a chair and do nothing‚Äù, ‚Äúwant to sit on a chair and do nothing‚Äù, or ‚Äúreally want to sit on a chair and do nothing‚Äù.",Do you want to be a writer when you grow up?,How much do you want to be a writer?,"Here's Sally.
+
+Do you think Sally wants to be a writer when she grows up?",How much do you think Sally wants to be a writer?,"Here's Tommy.
+
+Do you think Tommy wants to be a writer when he grows up?",How much do you think Tommy wants to be a writer?,Do you want to be a scientist when you grow up?,How much do you want to be a scientist?,"Here's Alice.
+
+Do you think Alice wants to be a scientist when she grows up?",How much do you think Alice wants to be a scientist?,"Here's Jason.
+
+Do you think Jason wants to be a scientist when he grows up?",How much do you think Jason wants to be a scientist?,Do you want to be a pilot who flies planes when you grow up?,How much do you want to be a pilot?,"Here's Mia.
+
+Do you think Mia wants to be a pilot when she grows up?",How much do you think Mia wants to be a pilot?,"Here's Chris.
+
+Do you think Chris wants to be a pilot when he grows up?",How much do you think Chris wants to be a pilot?
+"{""ImportId"":""startDate"",""timeZone"":""America/Los_Angeles""}","{""ImportId"":""endDate"",""timeZone"":""America/Los_Angeles""}","{""ImportId"":""status""}","{""ImportId"":""ipAddress""}","{""ImportId"":""progress""}","{""ImportId"":""duration""}","{""ImportId"":""finished""}","{""ImportId"":""recordedDate"",""timeZone"":""America/Los_Angeles""}","{""ImportId"":""_recordId""}","{""ImportId"":""recipientLastName""}","{""ImportId"":""recipientFirstName""}","{""ImportId"":""recipientEmail""}","{""ImportId"":""externalDataReference""}","{""ImportId"":""locationLatitude""}","{""ImportId"":""locationLongitude""}","{""ImportId"":""distributionChannel""}","{""ImportId"":""userLanguage""}","{""ImportId"":""QID48_TEXT""}","{""ImportId"":""QID47""}","{""ImportId"":""QID46_TEXT""}","{""ImportId"":""QID3""}","{""ImportId"":""QID4""}","{""ImportId"":""QID5""}","{""ImportId"":""QID43""}","{""ImportId"":""QID6""}","{""ImportId"":""QID7""}","{""ImportId"":""QID8""}","{""ImportId"":""QID44""}","{""ImportId"":""QID11""}","{""ImportId"":""QID12""}","{""ImportId"":""QID13""}","{""ImportId"":""QID14""}","{""ImportId"":""QID15""}","{""ImportId"":""QID16""}","{""ImportId"":""QID05""}","{""ImportId"":""QID26""}","{""ImportId"":""QID07""}","{""ImportId"":""QID28""}","{""ImportId"":""QID09""}","{""ImportId"":""QID30""}","{""ImportId"":""QID35""}","{""ImportId"":""QID36""}","{""ImportId"":""QID37""}","{""ImportId"":""QID38""}","{""ImportId"":""QID39""}","{""ImportId"":""QID40""}"
+7/12/2019 11:37,7/12/2019 11:42,16,*******,100,311,1,7/15/2019 10:17,R_9eloNun8SzYr8lx,*******,*******,*******,*******,*******,*******,,EN,47,1,4,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,2,1,3,1,3,1,3
+7/12/2019 12:38,7/12/2019 12:41,16,*******,100,188,1,7/15/2019 10:17,R_bGqmRbUhxhiWNFF,*******,*******,*******,*******,*******,*******,,EN,49,1,4,1,3,2,,1,1,2,,0,,1,3,1,3,0,,1,3,1,3,0,,0,,1,1
+7/18/2019 9:22,7/18/2019 9:26,16,*******,100,216,1,7/19/2019 9:34,R_jdks6xGOsfWzrPC,*******,*******,*******,*******,*******,*******,,EN,55,1,4,1,3,1,1,1,3,1,3,0,,0,,0,,1,3,1,3,1,3,1,3,1,2,1,1
+7/18/2019 11:00,7/18/2019 11:04,16,*******,100,214,1,7/19/2019 9:34,R_jK0H6xj57jnWQQ6,*******,*******,*******,*******,*******,*******,,EN,64,1,4,1,3,1,3,1,3,1,1,0,,1,3,1,3,0,,0,,1,3,0,,1,3,1,3
+7/19/2019 10:39,7/19/2019 10:42,16,*******,100,151,1,7/22/2019 10:23,R_k1lfLzlFPj8iDv0,*******,*******,*******,*******,*******,*******,,EN,70,1,5,1,3,2,,1,1,2,,0,,1,2,0,,0,,0,,0,,0,,1,3,0,
+7/19/2019 12:35,7/19/2019 12:40,16,*******,100,271,1,7/22/2019 10:23,R_ogdUzgZQ8vJWD1M,*******,*******,*******,*******,*******,*******,,EN,75,1,4,1,3,1,1,1,2,2,,1,1,1,2,1,3,1,3,1,2,1,3,1,3,1,3,1,3
+7/19/2019 11:07,7/19/2019 11:29,0,*******,100,1290,1,7/19/2019 11:29,R_2aRzMeJVqViKUMi,*******,*******,*******,*******,*******,*******,anonymous,EN,20743,1,6,1,3,2,,1,2,2,,1,1,1,3,1,2,0,,1,3,1,3,1,2,1,3,1,3
+7/19/2019 11:31,7/19/2019 11:52,0,*******,100,1268,1,7/19/2019 11:52,R_24CbT2WLOoiMXdC,*******,*******,*******,*******,*******,*******,anonymous,EN,22010,1,6,1,3,1,3,2,,2,,0,,1,3,0,,0,,0,,1,3,1,2,0,,1,3
+7/11/2019 9:53,7/11/2019 9:56,16,*******,100,184,1,7/15/2019 10:18,R_mRnMGovgsqtwGmH,*******,*******,*******,*******,*******,*******,,EN,Sciencenter 34,1,4,1,3,2,,1,3,2,,1,3,1,3,0,,0,,0,,0,,0,,1,1,0,
+7/11/2019 10:08,7/11/2019 10:12,16,*******,100,225,1,7/15/2019 10:18,R_lM3BTecILujfwPW,*******,*******,*******,*******,*******,*******,,EN,Sciencenter35,1,5,2,,2,,1,3,2,,1,2,1,3,0,,1,2,1,2,1,3,1,3,1,1,1,3
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+7/12/2019 12:55,7/12/2019 12:58,16,*******,100,177,1,7/15/2019 10:17,R_bruEDtYtOoMQmBU,*******,*******,*******,*******,*******,*******,,EN,50,2,4,1,3,2,,1,1,2,,0,,0,,1,1,0,,1,3,0,,0,,1,1,0,
+7/12/2019 13:21,7/12/2019 13:24,16,*******,100,181,1,7/15/2019 10:17,R_gg0wQGUQtedNkfm,*******,*******,*******,*******,*******,*******,,EN,51,2,5,1,3,2,,1,1,2,,0,,1,3,0,,0,,0,,1,2,0,,0,,1,1
+7/18/2019 10:47,7/18/2019 10:50,16,*******,100,167,1,7/19/2019 9:34,R_hLTLNW7NY70eb1E,*******,*******,*******,*******,*******,*******,,EN,60,2,5,1,3,2,,1,2,2,,0,,1,3,1,3,1,2,1,3,1,3,0,,1,2,1,2
+7/18/2019 11:05,7/18/2019 11:09,16,*******,100,266,1,7/19/2019 9:34,R_fpDlQ2P9ncdWffL,*******,*******,*******,*******,*******,*******,,EN,61,2,4,1,3,2,,1,3,1,3,1,3,1,3,1,3,1,3,1,1,1,2,1,1,1,3,1,3
+7/18/2019 11:11,7/18/2019 11:13,16,*******,100,150,1,7/19/2019 9:34,R_2HsgkTIF5u46vkd,*******,*******,*******,*******,*******,*******,,EN,62,2,5,1,2,2,,1,3,2,,0,,0,,1,3,0,,0,,1,3,0,,0,,1,3
+7/18/2019 10:56,7/18/2019 10:59,16,*******,100,218,1,7/19/2019 9:34,R_h1ymYHFqtX5oLTf,*******,*******,*******,*******,*******,*******,,EN,63,2,5,1,3,2,,1,3,2,,1,3,1,3,1,3,1,3,1,3,1,3,0,,1,3,1,2
+7/18/2019 12:51,7/18/2019 12:55,16,*******,100,221,1,7/19/2019 9:34,R_dBI5IoDs2pwPo1E,*******,*******,*******,*******,*******,*******,,EN,67,2,5,1,1,1,1,1,2,2,,1,2,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2
+7/19/2019 13:27,7/19/2019 13:31,16,*******,100,258,1,7/22/2019 10:23,R_8GFufl9bu77gqDN,*******,*******,*******,*******,*******,*******,,EN,77,2,4,1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3
+7/22/2019 12:16,7/22/2019 12:20,16,*******,100,261,1,7/23/2019 10:07,R_5ftqztpjmMYgDu2,*******,*******,*******,*******,*******,*******,,EN,78,2,5,1,2,2,,1,1,2,,1,1,0,,1,2,1,2,1,3,0,,0,,1,2,0,
+7/22/2019 12:37,7/22/2019 12:42,16,*******,100,255,1,7/23/2019 10:07,R_5Y5LODfssM7p9M6,*******,*******,*******,*******,*******,*******,,EN,80,2,5,1,2,2,,1,3,2,,1,1,1,3,1,1,1,3,0,,1,2,0,,1,3,1,3
+7/13/2019 6:43,7/13/2019 7:33,0,*******,100,3017,1,7/13/2019 7:33,R_1HbBltcueGD0Rf0,*******,*******,*******,*******,*******,*******,anonymous,EN,20792,2,6,2,,2,,2,,2,,0,,1,3,0,,0,,1,2,0,,0,,0,,1,3
+7/19/2019 10:39,7/19/2019 11:07,0,*******,100,1692,1,7/19/2019 11:07,R_1BXj0RB9QUTPg1r,*******,*******,*******,*******,*******,*******,anonymous,EN,21254,2,4,1,3,2,,1,3,2,,1,2,1,2,0,,1,1,1,1,0,,1,1,1,3,1,1
+7/11/2019 9:29,7/11/2019 9:32,16,*******,100,175,1,7/15/2019 10:18,R_ooKLZGLNXs9TEt9,*******,*******,*******,*******,*******,*******,,EN,Sciencenter 33,2,5,2,,2,,2,,1,3,0,,1,2,0,,1,3,1,2,1,1,1,1,0,,1,3
+7/11/2019 11:36,7/11/2019 11:39,16,*******,100,190,1,7/15/2019 10:17,R_oJ1c8e5I4Tt73zL,*******,*******,*******,*******,*******,*******,,EN,Sciencenter41,2,5,1,2,2,,1,2,2,,0,,0,,1,2,0,,1,2,1,3,0,,1,1,1,2
